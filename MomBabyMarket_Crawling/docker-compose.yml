@@ -1,0 +1,67 @@
+version: '3.8'
+
+services:
+  # MomBabyMarket Crawler Service
+  crawler:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: mombabymarket-crawler
+    restart: "no"  # Run once and exit (crawler job)
+    
+    # Load environment variables from .env file
+    env_file:
+      - .env
+    
+    # Additional environment variables (override .env if needed)
+    environment:
+      # Ensure Docker-specific settings
+      - PUPPETEER_SKIP_CHROMIUM_DOWNLOAD=true
+      - PUPPETEER_EXECUTABLE_PATH=/usr/bin/chromium-browser
+      
+      # Use .env variables with fallbacks
+      - NODE_ENV=${NODE_ENV:-production}
+      - HEADLESS=${HEADLESS:-true}
+      - CRAWL_DELAY=${CRAWL_DELAY:-3000}
+      - MAX_RETRIES=${MAX_RETRIES:-3}
+      - TIMEOUT=${TIMEOUT:-30000}
+      - LOG_LEVEL=${LOG_LEVEL:-info}
+      - USER_AGENT=${USER_AGENT:-Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36}
+      - VIEWPORT_WIDTH=${VIEWPORT_WIDTH:-1366}
+      - VIEWPORT_HEIGHT=${VIEWPORT_HEIGHT:-768}
+      
+    volumes:
+      # Map data directories using environment variables
+      - ${OUTPUT_DIR:-./data}:/app/data
+      - ${IMAGES_DIR:-./data/images}:/app/data/images
+      - ./logs:/app/logs
+      
+      # Optional: Development mode - mount source code
+      # Uncomment for live reload during development
+      # - ./src:/app/src:ro
+      
+    networks:
+      - crawler-network
+      
+    # Resource limits based on complexity
+    deploy:
+      resources:
+        limits:
+          cpus: '2.0'
+          memory: 4G
+        reservations:
+          cpus: '1.0'
+          memory: 2G
+    
+    # Health check to verify crawler completion
+    healthcheck:
+      test: ["CMD", "test", "-f", "/app/data/crawled_data.json", "||", "exit", "1"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+      start_period: 60s
+
+networks:
+  crawler-network:
+    driver: bridge
+    name: mombabymarket-network

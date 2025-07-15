@@ -14,77 +14,131 @@ const facebookCrawlerService = {
       
       page = await browserService.createPage();
       
+      // Set viewport and user agent to avoid detection
+      await page.setViewport({ width: 1366, height: 768 });
+      await page.setUserAgent('Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36');
+      
       // Navigate to page
       await page.goto(url, { 
-        waitUntil: 'networkidle2', 
+        waitUntil: 'networkidle0', 
         timeout: parseInt(process.env.TIMEOUT) || 30000 
       });
       
-      // Wait for posts to load
-      try {
-        await page.waitForSelector('[role="feed"], [data-pagelet="FeedUnit"], .userContentWrapper', { timeout: 10000 });
-      } catch (error) {
-        logger.warn('No posts found on Facebook page');
+      // Wait for page to fully load
+      await delay(5000);
+      
+      // Try multiple selectors for 2024/2025 Facebook
+      const postSelectors = [
+        '[role="main"] [role="article"]',     // New Facebook structure
+        '[data-pagelet*="ProfileTimeline"]',  // Profile timeline
+        '[aria-label*="Timeline"]',           // Timeline container
+        'div[data-pagelet] div[role="article"]', // Nested articles
+        '[role="feed"] > div > div',          // Feed items
+        'div[style*="transform"] [role="article"]' // Virtualized content
+      ];
+      
+      let postsFound = false;
+      
+      for (const selector of postSelectors) {
+        try {
+          await page.waitForSelector(selector, { timeout: 5000 });
+          const count = await page.evaluate((sel) => {
+            return document.querySelectorAll(sel).length;
+          }, selector);
+          
+          if (count > 0) {
+            logger.info(`✅ Found ${count} posts using selector: ${selector}`);
+            postsFound = true;
+            break;
+          }
+        } catch (error) {
+          logger.debug(`Selector failed: ${selector}`);
+        }
+      }
+      
+      if (!postsFound) {
+        // Try scrolling first to load content
+        await page.evaluate(() => {
+          window.scrollTo(0, 1000);
+        });
+        await delay(3000);
+        
+        // Check again after scroll
+        for (const selector of postSelectors) {
+          try {
+            await page.waitForSelector(selector, { timeout: 3000 });
+            postsFound = true;
+            break;
+          } catch (error) {
+            continue;
+          }
+        }
+      }
+      
+      if (!postsFound) {
+        logger.warn('No posts found on Facebook page after trying all selectors');
         return results;
       }
       
-      // Scroll to load more posts
-      await this.scrollToLoadPosts(page, maxPosts);
-      
-      // Extract post data
+      // Extract posts with updated selectors
       const posts = await page.evaluate((max) => {
-        const selectors = [
-          '[role="feed"] > div',
-          '[data-pagelet="FeedUnit"]',
-          '.userContentWrapper',
-          '._5pcr'
+        // Updated selectors for current Facebook
+        const postSelectors = [
+          '[role="main"] [role="article"]',
+          '[data-pagelet*="ProfileTimeline"] [role="article"]',
+          '[role="feed"] > div > div',
+          'div[data-pagelet] div[role="article"]'
         ];
         
-        let postElements = null;
+        let postElements = [];
         
-        // Try different selectors
-        for (const selector of selectors) {
-          const elements = document.querySelectorAll(selector);
+        for (const selector of postSelectors) {
+          const elements = Array.from(document.querySelectorAll(selector));
           if (elements.length > 0) {
             postElements = elements;
+            console.log(`Using selector: ${selector}, found ${elements.length} posts`);
             break;
           }
         }
         
-        if (!postElements) return [];
+        if (postElements.length === 0) return [];
         
         const posts = [];
         
+        // Take only first N posts (newest first)
         for (let i = 0; i < Math.min(postElements.length, max); i++) {
           const post = postElements[i];
           
           try {
-            // Extract title/content
+            // Updated content selectors for 2024/2025
             const contentSelectors = [
               '[data-ad-preview="message"]',
-              '.userContent',
-              '[dir="auto"]',
-              '.text_exposed_root',
-              'p',
-              'span'
+              '[style*="text-align: start"]',
+              'div[dir="auto"]',
+              '[role="article"] span[dir="auto"]',
+              '[role="article"] div[lang]',
+              'div[data-ad-comet-preview="message"]'
             ];
             
             let title = '';
             for (const selector of contentSelectors) {
-              const element = post.querySelector(selector);
-              if (element && element.textContent) {
-                title = element.textContent.trim();
-                break;
+              const elements = post.querySelectorAll(selector);
+              for (const element of elements) {
+                if (element && element.textContent && element.textContent.trim().length > 10) {
+                  title = element.textContent.trim();
+                  break;
+                }
               }
+              if (title) break;
             }
             
-            // Extract image URL
+            // Updated image selectors
             const imgSelectors = [
               'img[src*="scontent"]',
               'img[src*="fbcdn"]',
               'img[data-src*="scontent"]',
-              '.spotlight img',
-              '._46-i img'
+              '[role="article"] img[referrerpolicy]',
+              'div[role="button"] img'
             ];
             
             let imageUrl = '';
@@ -93,19 +147,19 @@ const facebookCrawlerService = {
               if (imgElement) {
                 imageUrl = imgElement.getAttribute('src') || 
                           imgElement.getAttribute('data-src') || '';
-                if (imageUrl && imageUrl.includes('scontent')) {
+                if (imageUrl && (imageUrl.includes('scontent') || imageUrl.includes('fbcdn'))) {
                   break;
                 }
               }
             }
             
-            // Extract post URL
+            // Updated link selectors
             const linkSelectors = [
               'a[href*="/posts/"]',
               'a[href*="/photos/"]',
               'a[href*="/videos/"]',
-              '.timestamp a',
-              '._5pcq a'
+              '[role="article"] a[role="link"]',
+              'a[aria-label*="ago"]'
             ];
             
             let articleUrl = '';
@@ -113,20 +167,24 @@ const facebookCrawlerService = {
               const linkElement = post.querySelector(selector);
               if (linkElement) {
                 const href = linkElement.getAttribute('href') || '';
-                if (href) {
+                if (href && (href.includes('/posts/') || href.includes('/photos/'))) {
                   articleUrl = href.startsWith('http') ? href : 'https://facebook.com' + href;
                   break;
                 }
               }
             }
             
-            if (title || imageUrl) {
+            // Only include posts with content
+            if (title && title.length > 5) {
               posts.push({
                 title: title.substring(0, 500),
                 imageUrl: imageUrl,
                 articleUrl: articleUrl || window.location.href,
-                publishedAt: new Date().toISOString()
+                publishedAt: new Date().toISOString(),
+                postIndex: i + 1
               });
+              
+              console.log(`✅ Extracted post ${i + 1}: "${title.substring(0, 50)}..."`);
             }
           } catch (error) {
             console.error('Error extracting post data:', error);
@@ -135,6 +193,8 @@ const facebookCrawlerService = {
         
         return posts;
       }, maxPosts);
+      
+      logger.info(`📊 Raw extraction: ${posts.length} posts found`);
       
       // Process results
       for (let i = 0; i < posts.length; i++) {
@@ -145,7 +205,7 @@ const facebookCrawlerService = {
           localImagePath = await imageService.downloadImage(
             post.imageUrl, 
             'facebook', 
-            `post_${i}`
+            `post_${i + 1}`
           );
         }
         
@@ -160,59 +220,19 @@ const facebookCrawlerService = {
           platform: 'facebook',
           crawledAt: new Date()
         });
+        
+        logger.info(`✅ Processed Facebook post ${i + 1}/${posts.length}: "${post.title.substring(0, 50)}..."`);
       }
       
-      logger.info(`Facebook crawl completed: ${results.length} posts extracted`);
+      logger.info(`🎉 Facebook crawl completed: ${results.length}/${maxPosts} posts extracted`);
       
     } catch (error) {
-      logger.error(`Facebook crawl failed for ${url}:`, error);
+      logger.error(`❌ Facebook crawl failed for ${url}:`, error);
     } finally {
       if (page) await browserService.closePage(page);
     }
     
     return results;
-  },
-  
-  async scrollToLoadPosts(page, targetCount) {
-    let loadedPosts = 0;
-    let scrollAttempts = 0;
-    const maxScrollAttempts = 5;
-    
-    while (loadedPosts < targetCount && scrollAttempts < maxScrollAttempts) {
-      // Scroll down
-      await page.evaluate(() => {
-        window.scrollTo(0, document.body.scrollHeight);
-      });
-      
-      // Wait for new content
-      await delay(3000);
-      
-      // Count current posts
-      const currentPosts = await page.evaluate(() => {
-        const selectors = [
-          '[role="feed"] > div',
-          '[data-pagelet="FeedUnit"]',
-          '.userContentWrapper'
-        ];
-        
-        for (const selector of selectors) {
-          const elements = document.querySelectorAll(selector);
-          if (elements.length > 0) {
-            return elements.length;
-          }
-        }
-        return 0;
-      });
-      
-      if (currentPosts > loadedPosts) {
-        loadedPosts = currentPosts;
-        scrollAttempts = 0; // Reset if we found new posts
-      } else {
-        scrollAttempts++;
-      }
-      
-      logger.info(`Facebook scroll: ${currentPosts} posts loaded, attempt ${scrollAttempts}`);
-    }
   }
 };
 
