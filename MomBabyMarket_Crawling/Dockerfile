@@ -30,9 +30,6 @@ COPY . .
 # Create output directories
 RUN mkdir -p data/images data/json logs
 
-# Build TypeScript
-RUN npm run build
-
 # Change ownership to node user
 RUN chown -R node:node /app
 
