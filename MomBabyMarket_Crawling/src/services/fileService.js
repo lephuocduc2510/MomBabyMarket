@@ -3,72 +3,109 @@ const path = require('path');
 const logger = require('../utils/logger');
 
 const fileService = {
-  async saveResults(results) {
+  async appendResult(result) {
     try {
       const outputDir = process.env.OUTPUT_DIR || './data';
       const outputFile = path.join(outputDir, 'crawled_data.json');
-      
+
       // Ensure output directory exists
       await fs.ensureDir(outputDir);
-      
-      // Save main results
-      await fs.writeJson(outputFile, results, { spaces: 2 });
-      logger.info(`💾 Results saved to: ${outputFile}`);
-      
+
+      // Check if file exists and read existing data
+      let existingData = [];
+      let nextId = 1;
+
+      if (await fs.pathExists(outputFile)) {
+        existingData = await fs.readJson(outputFile);
+        
+        // Calculate next ID based on existing data
+        if (existingData.length > 0) {
+          const maxId = Math.max(...existingData.map(item => item.id || 0));
+          nextId = maxId + 1;
+        }
+      }
+
+      // Add ID to the new result
+      const resultWithId = {
+        id: nextId,
+        ...result
+      };
+
+      // Append to existing data
+      existingData.push(resultWithId);
+
+      // Write back to file
+      await fs.writeJson(outputFile, existingData, { spaces: 2 });
+
+      logger.info(`💾 Result appended to: ${outputFile} (ID: ${nextId})`);
       return outputFile;
     } catch (error) {
-      logger.error('Failed to save results:', error);
+      logger.error('Failed to append result:', error);
       throw error;
     }
   },
 
-  async saveStats(stats) {
+  async createImageDirectory(platform, name) {
     try {
-      const outputDir = process.env.OUTPUT_DIR || './data';
-      const statsFile = path.join(outputDir, 'crawl_stats.json');
-      
-      await fs.writeJson(statsFile, stats, { spaces: 2 });
-      logger.info(`📊 Stats saved to: ${statsFile}`);
-      
-      return statsFile;
+      // Normalize name to remove special characters and spaces
+      const normalizedName = name.replace(/[^a-zA-Z0-9]/g, '_');
+      const dir = path.join(process.cwd(), 'data', 'images', platform, normalizedName);
+
+      // Ensure directory exists
+      await fs.ensureDir(dir);
+      logger.info(`📁 Image directory created: ${dir}`);
+      return dir;
     } catch (error) {
-      logger.error('Failed to save stats:', error);
+      logger.error('Failed to create image directory:', error.message);
+      throw error;
     }
   },
 
-  async saveSummaryReport(results, stats) {
+  // Helper function to get next available ID (optional, for manual use)
+  async getNextId() {
     try {
-      const report = {
-        summary: stats,
-        byPlatform: {
-          facebook: results.filter(r => r.platform === 'facebook').length,
-          instagram: results.filter(r => r.platform === 'instagram').length,
-          website: results.filter(r => r.platform === 'website').length
-        },
-        bySource: {}
-      };
+      const outputDir = process.env.OUTPUT_DIR || './data';
+      const outputFile = path.join(outputDir, 'crawled_data.json');
 
-      // Count by source
-      for (const result of results) {
-        try {
-          const domain = new URL(result.source).hostname;
-          report.bySource[domain] = (report.bySource[domain] || 0) + 1;
-        } catch (error) {
-          // Skip invalid URLs
+      if (await fs.pathExists(outputFile)) {
+        const existingData = await fs.readJson(outputFile);
+        if (existingData.length > 0) {
+          const maxId = Math.max(...existingData.map(item => item.id || 0));
+          return maxId + 1;
         }
       }
-
-      const outputDir = process.env.OUTPUT_DIR || './data';
-      const reportFile = path.join(outputDir, 'summary_report.json');
-      
-      await fs.writeJson(reportFile, report, { spaces: 2 });
-      logger.info(`📋 Summary report saved to: ${reportFile}`);
-      
-      return reportFile;
+      return 1;
     } catch (error) {
-      logger.error('Failed to save summary report:', error);
+      logger.error('Failed to get next ID:', error);
+      return 1;
     }
-  }
+  },
+
+  // Helper function to reset IDs (nếu cần reset lại từ đầu)
+  async resetIds() {
+    try {
+      const outputDir = process.env.OUTPUT_DIR || './data';
+      const outputFile = path.join(outputDir, 'crawled_data.json');
+
+      if (await fs.pathExists(outputFile)) {
+        const existingData = await fs.readJson(outputFile);
+        
+        // Re-assign IDs from 1
+        const dataWithNewIds = existingData.map((item, index) => ({
+          id: index + 1,
+          ...item
+        }));
+
+        await fs.writeJson(outputFile, dataWithNewIds, { spaces: 2 });
+        logger.info(`🔄 IDs reset successfully. Total records: ${dataWithNewIds.length}`);
+        return dataWithNewIds.length;
+      }
+      return 0;
+    } catch (error) {
+      logger.error('Failed to reset IDs:', error);
+      throw error;
+    }
+  },
 };
 
 module.exports = fileService;

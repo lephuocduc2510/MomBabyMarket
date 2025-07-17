@@ -1,0 +1,50 @@
+{
+  "name": "mombabymarket-fullstack",
+  "version": "1.0.0",
+  "description": "Full-stack web application for MomBabyMarket case study",
+  "main": "index.js",
+  "scripts": {
+    "dev": "concurrently \"npm run dev:backend\" \"npm run dev:frontend\"",
+    "dev:backend": "cd MomBabyMarket_Backend && npm run dev",
+    "dev:frontend": "cd MomBabyMarket_Frontend/mombabymarket-frontend && npm run dev",
+    "build": "npm run build:backend && npm run build:frontend",
+    "build:backend": "cd MomBabyMarket_Backend && npm run build",
+    "build:frontend": "cd MomBabyMarket_Frontend/mombabymarket-frontend && npm run build",
+    "start": "concurrently \"npm run start:backend\" \"npm run start:frontend\"",
+    "start:backend": "cd MomBabyMarket_Backend && npm start",
+    "start:frontend": "cd MomBabyMarket_Frontend/mombabymarket-frontend && npm start",
+    "install:all": "npm run install:backend && npm run install:frontend",
+    "install:backend": "cd MomBabyMarket_Backend && npm install",
+    "install:frontend": "cd MomBabyMarket_Frontend/mombabymarket-frontend && npm install",
+    "import:data": "cd MomBabyMarket_Backend && npm run import",
+    "crawl": "cd MomBabyMarket_Crawling && npm start",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [
+    "mombabymarket",
+    "fullstack",
+    "nextjs",
+    "nodejs",
+    "mongodb",
+    "crawler",
+    "ecommerce",
+    "social-media"
+  ],
+  "author": "Hekate Team",
+  "license": "MIT",
+  "devDependencies": {
+    "concurrently": "^8.2.2"
+  },
+  "engines": {
+    "node": ">=18.0.0",
+    "npm": ">=8.0.0"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/lephuocduc2510/MomBabyMarket.git"
+  },
+  "bugs": {
+    "url": "https://github.com/lephuocduc2510/MomBabyMarket/issues"
+  },
+  "homepage": "https://github.com/lephuocduc2510/MomBabyMarket#readme"
+}

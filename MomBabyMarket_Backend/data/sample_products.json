@@ -1,0 +1,52 @@
+[
+  {
+    "id": 47,
+    "title": "Jivh Hurgelt Product 1",
+    "imageUrl": "https://cdn.greensoft.mn/cache/images/d/f/e/1/d/dfe1dad9ec3fb277da75818d40e0e265cc4c555e.jpg",
+    "articleUrl": "https://jivh-hurgelt.mn/product/171083?page=1",
+    "localImagePath": "data\\images\\website\\Jivh_Hurgelt_13252\\2025-07-16T14-32-43-147Z_jivh_1.jpg",
+    "source": "https://jivh-hurgelt.mn/products?category_id=13252",
+    "platform": "website",
+    "crawledAt": "2025-07-16T14:32:43.333Z"
+  },
+  {
+    "id": 48,
+    "title": "Jivh Hurgelt Product 2",
+    "imageUrl": "https://cdn.greensoft.mn/cache/images/f/6/9/2/2/f6922c766c6552b53039920b7ada24127eaa7ef6.jpg",
+    "articleUrl": "https://jivh-hurgelt.mn/product/149033?page=1",
+    "localImagePath": "data\\images\\website\\Jivh_Hurgelt_13252\\2025-07-16T14-32-43-337Z_jivh_2.jpg",
+    "source": "https://jivh-hurgelt.mn/products?category_id=13252",
+    "platform": "website",
+    "crawledAt": "2025-07-16T14:32:43.414Z"
+  },
+  {
+    "id": 49,
+    "title": "Jivh Hurgelt Product 3",
+    "imageUrl": "https://cdn.greensoft.mn/cache/images/b/9/1/8/f/b918fcb400156ee76813a582bef9fcf4e4acddd5.jpg",
+    "articleUrl": "https://jivh-hurgelt.mn/product/209292?page=1",
+    "localImagePath": "data\\images\\website\\Jivh_Hurgelt_13252\\2025-07-16T14-32-43-418Z_jivh_3.jpg",
+    "source": "https://jivh-hurgelt.mn/products?category_id=13252",
+    "platform": "website",
+    "crawledAt": "2025-07-16T14:32:43.499Z"
+  },
+  {
+    "id": 50,
+    "title": "Baby Formula Organic",
+    "imageUrl": "https://example.com/baby-formula.jpg",
+    "articleUrl": "https://mombabymarket.com/product/baby-formula-organic",
+    "localImagePath": "data\\images\\website\\MomBaby_Market\\2025-07-16T15-00-00-000Z_formula_1.jpg",
+    "source": "https://mombabymarket.com/products?category=baby-food",
+    "platform": "website",
+    "crawledAt": "2025-07-16T15:00:00.000Z"
+  },
+  {
+    "id": 51,
+    "title": "Stroller Premium 3-in-1",
+    "imageUrl": "https://example.com/stroller.jpg",
+    "articleUrl": "https://mombabymarket.com/product/stroller-premium",
+    "localImagePath": "data\\images\\website\\MomBaby_Market\\2025-07-16T15-05-00-000Z_stroller_1.jpg",
+    "source": "https://mombabymarket.com/products?category=baby-gear",
+    "platform": "website",
+    "crawledAt": "2025-07-16T15:05:00.000Z"
+  }
+]

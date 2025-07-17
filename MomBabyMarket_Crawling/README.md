@@ -2,14 +2,6 @@
 
 Tool crawl chuyên nghiệp cho dự án MomBabyMarket case study. Thu thập dữ liệu từ 32 targets: Facebook, Instagram và các website thương mại điện tử.
 
-## 🚀 Tính năng
-
-- ✅ **32 targets**: 16 Facebook + 6 Instagram + 10 websites  
-- ✅ **Docker ready**: Containerized với Chrome headless
-- ✅ **Service Pattern**: Kiến trúc modular, dễ bảo trì
-- ✅ **Auto download**: Tải và tối ưu ảnh tự động
-- ✅ **Error handling**: Retry mechanism + comprehensive logging
-
 ## 📋 Yêu cầu
 
 - **Docker** (khuyến nghị) hoặc Node.js 18+
@@ -18,43 +10,7 @@ Tool crawl chuyên nghiệp cho dự án MomBabyMarket case study. Thu thập d�
 
 ## 🏃‍♂️ Cách chạy
 
-### Option 1: Docker (Khuyến nghị)
-
-```bash
-# 1. Build image
-docker build -t mombabymarket-crawler .
-
-# 2. Chạy crawler
-docker run mombabymarket-crawler
-```
-
-### Option 2: Docker với volume mapping
-
-```bash
-# Map data folder để lưu kết quả
-docker run -v $(pwd)/data:/app/data mombabymarket-crawler
-
-# Windows PowerShell:
-docker run -v ${PWD}/data:/app/data mombabymarket-crawler
-
-# Windows CMD:
-docker run -v %cd%/data:/app/data mombabymarket-crawler
-```
-
-### Option 3: Local Development
-
-```bash
-# 1. Cài đặt dependencies
-npm install
-
-# 2. Chạy crawler
-npm start
-
-# Debug mode
-npm run dev
-```
-
-### Option 4: Docker Compose
+### Option 1: Docker Compose
 
 ```bash
 # Build và chạy
@@ -69,6 +25,21 @@ docker-compose logs -f
 # Dừng
 docker-compose down
 ```
+
+
+### Option 2: Local Development
+
+```bash
+# 1. Cài đặt dependencies
+npm install
+
+# 2. Chạy dự án và bắt đầu crawler
+npm run dev
+
+
+```
+
+
 
 ## 🔧 Debug & Troubleshooting
 

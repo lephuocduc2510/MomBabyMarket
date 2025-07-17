@@ -17,13 +17,13 @@ const targets = [
   { url: 'https://www.facebook.com/www.nomin.mn', platform: 'facebook', name: 'Nomin Facebook', maxPosts: 5 },
   { url: 'https://www.facebook.com/babyworldmn/', platform: 'facebook', name: 'Baby World MN', maxPosts: 5 },
   
-  // Instagram Pages
-  { url: 'https://www.instagram.com/jivhkhurgelt/', platform: 'instagram', name: 'Jivh Khurgelt', maxPosts: 5 },
-  { url: 'https://www.instagram.com/tushopping2/', platform: 'instagram', name: 'Tu Shopping 2', maxPosts: 5 },
-  { url: 'https://www.instagram.com/nominmn.official/', platform: 'instagram', name: 'Nomin MN Official', maxPosts: 5 },
-  { url: 'https://www.instagram.com/haakaamongolia/', platform: 'instagram', name: 'Haakaa Mongolia IG', maxPosts: 5 },
-  { url: 'https://www.instagram.com/baby_world_mongolia/', platform: 'instagram', name: 'Baby World Mongolia IG', maxPosts: 5 },
-  { url: 'https://www.instagram.com/mamako.mgl/', platform: 'instagram', name: 'Mamako MGL IG', maxPosts: 5 },
+  // Instagram Pages (using User IDs instead of URLs for API)
+  { url: 'jivhkhurgelt', platform: 'instagram_api', name: 'Jivh Khurgelt', maxPosts: 5, userId: 'jivhkhurgelt' },
+  { url: 'tushopping2', platform: 'instagram_api', name: 'Tu Shopping 2', maxPosts: 5, userId: 'tushopping2' },
+  { url: 'nominmn.official', platform: 'instagram_api', name: 'Nomin MN Official', maxPosts: 5, userId: 'nominmn.official' },
+  { url: 'haakaamongolia', platform: 'instagram_api', name: 'Haakaa Mongolia IG', maxPosts: 5, userId: 'haakaamongolia' },
+  { url: 'baby_world_mongolia', platform: 'instagram_api', name: 'Baby World Mongolia IG', maxPosts: 5, userId: 'baby_world_mongolia' },
+  { url: 'mamako.mgl', platform: 'instagram_api', name: 'Mamako MGL IG', maxPosts: 5, userId: 'mamako.mgl' },
   
   // E-commerce Websites
   { url: 'https://www.emonos.mn/product/41074', platform: 'website', name: 'Emonos Product', maxPosts: 5 },

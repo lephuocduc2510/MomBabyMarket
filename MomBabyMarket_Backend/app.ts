@@ -3,6 +3,8 @@ import cors from 'cors';
 import helmet from 'helmet';
 import morgan from 'morgan';
 import dotenv from 'dotenv';
+import { connectDB } from './models';
+import apiRoutes from './routes';
 
 dotenv.config();
 
@@ -12,7 +14,13 @@ const PORT = process.env.PORT || 9000;
 // Middlewares
 app.use(helmet());
 app.use(cors({
-  origin: process.env.CORS_ORIGIN || 'http://localhost:3000'
+  origin: [
+    'http://localhost:3000',
+    'http://localhost:3001',
+    process.env.CORS_ORIGIN || 'http://localhost:3000'
+  ],
+  credentials: true,
+  optionsSuccessStatus: 200
 }));
 app.use(morgan('combined'));
 app.use(express.json());
@@ -28,6 +36,9 @@ app.get('/health', (req, res) => {
     environment: process.env.NODE_ENV || 'development'
   });
 });
+
+// API Routes
+app.use('/api', apiRoutes);
 
 // Test API endpoint
 app.get('/api/test', (req, res) => {
@@ -60,8 +71,11 @@ app.all('*', (req, res) => {
 });
 
 // Start server
-const startServer = () => {
+const startServer = async () => {
   try {
+    // Connect to MongoDB
+    await connectDB();
+    
     app.listen(PORT, () => {
       console.log(`🚀 Server running on http://localhost:${PORT}`);
       console.log(`📊 Health check: http://localhost:${PORT}/health`);

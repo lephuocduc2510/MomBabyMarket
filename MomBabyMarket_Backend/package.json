@@ -6,7 +6,10 @@
     "dev": "nodemon app.ts",
     "build": "tsc",
     "start": "node dist/app.js",
-    "clean": "rimraf dist"
+    "clean": "rimraf dist",
+    "import": "ts-node scripts/import.ts import",
+    "import:clear": "ts-node scripts/import.ts import:clear",
+    "import:stats": "ts-node scripts/import.ts import:stats"
   },
   "dependencies": {
     "cors": "^2.8.5",

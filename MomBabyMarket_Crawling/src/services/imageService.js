@@ -3,17 +3,18 @@ const path = require('path');
 const axios = require('axios');
 const sharp = require('sharp');
 const logger = require('../utils/logger');
+const fileService = require('./fileService');
 
 const imageService = {
-  async downloadImage(imageUrl, platform, filename) {
+  async downloadImage(imageUrl, platform, name, filename) {
     try {
-      const dir = path.join(process.cwd(), 'data', 'images', platform);
-      await fs.ensureDir(dir);
-      
+      // Create image directory based on platform and name
+      const dir = await fileService.createImageDirectory(platform, name);
+
       const timestamp = new Date().toISOString().replace(/[:.]/g, '-');
       const ext = '.jpg';
       const filePath = path.join(dir, `${timestamp}_${filename}${ext}`);
-      
+
       // Download image
       const response = await axios({
         method: 'GET',
@@ -21,8 +22,8 @@ const imageService = {
         responseType: 'stream',
         timeout: 10000,
         headers: {
-          'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36'
-        }
+          'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36',
+        },
       });
 
       // Save to temp file first
@@ -48,12 +49,11 @@ const imageService = {
       const relativePath = path.relative(process.cwd(), filePath);
       logger.info(`Image downloaded: ${relativePath}`);
       return relativePath;
-
     } catch (error) {
       logger.error(`Failed to download image ${imageUrl}:`, error.message);
       return null;
     }
-  }
+  },
 };
 
 module.exports = imageService;
